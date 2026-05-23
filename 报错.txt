@@ -1,0 +1,137 @@
+PS D:\2\backend> mvn spring-boot:run
+[INFO] Scanning for projects...
+[INFO]
+[INFO] ----------------------< com.godblessyou:backend >-----------------------
+[INFO] Building lottery-backend 0.0.1-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO]
+[INFO] >>> spring-boot:3.2.5:run (default-cli) > test-compile @ backend >>>
+[INFO]
+[INFO] --- resources:3.3.1:resources (default-resources) @ backend ---
+[INFO] Copying 1 resource from src\main\resources to target\classes
+[INFO] Copying 4 resources from src\main\resources to target\classes
+[INFO]
+[INFO] --- compiler:3.11.0:compile (default-compile) @ backend ---
+[INFO] Changes detected - recompiling the module! :source
+[INFO] Compiling 61 source files with javac [debug release 17] to target\classes
+[INFO] -------------------------------------------------------------
+[ERROR] COMPILATION ERROR :
+[INFO] -------------------------------------------------------------
+[ERROR] /D:/2/backend/src/main/java/com/godblessyou/lottery/infrastructure/mail/MailService.java:[49,35] 对save的引用不明确
+  com.godblessyou.lottery.domain.repository.EmailSendLogRepository 中的方法 save(com.godblessyou.lottery.domain.entity.EmailSendLog) 和 org.springframework.data.repository.CrudRepository 中的方法 <S>save(S) 都匹配
+[ERROR] /D:/2/backend/src/main/java/com/godblessyou/lottery/infrastructure/mail/MailService.java:[63,39] 对save的引用不明确
+  com.godblessyou.lottery.domain.repository.EmailSendLogRepository 中的方法 save(com.godblessyou.lottery.domain.entity.EmailSendLog) 和 org.springframework.data.repository.CrudRepository 中的方法 <S>save(S) 都匹配
+[ERROR] /D:/2/backend/src/main/java/com/godblessyou/lottery/infrastructure/mail/MailService.java:[75,39] 对save的引用不明确
+  com.godblessyou.lottery.domain.repository.EmailSendLogRepository 中的方法 save(com.godblessyou.lottery.domain.entity.EmailSendLog) 和 org.springframework.data.repository.CrudRepository 中的方法 <S>save(S) 都匹配
+[ERROR] /D:/2/backend/src/main/java/com/godblessyou/lottery/infrastructure/config/AdminBootstrapConfig.java:[50,27] 对save的引用不明确
+  com.godblessyou.lottery.domain.repository.UserRepository 中的方法 save(com.godblessyou.lottery.domain.entity.User) 和 org.springframework.data.repository.CrudRepository 中的方法 <S>save(S) 都匹配
+[ERROR] /D:/2/backend/src/main/java/com/godblessyou/lottery/application/service/impl/AuthServiceImpl.java:[67,30] 对save的引用不明确
+  com.godblessyou.lottery.domain.repository.UserRepository 中的方法 save(com.godblessyou.lottery.domain.entity.User) 和 org.springframework.data.repository.CrudRepository 中的方法 <S>save(S) 都匹配
+[ERROR] /D:/2/backend/src/main/java/com/godblessyou/lottery/application/service/impl/AuthServiceImpl.java:[75,36] 对save的引用不明确
+  com.godblessyou.lottery.domain.repository.EmailVerificationRepository 中的方法 save(com.godblessyou.lottery.domain.entity.EmailVerification) 和 org.springframework.data.repository.CrudRepository 中的方法 <S>save(S) 都匹配
+[ERROR] /D:/2/backend/src/main/java/com/godblessyou/lottery/application/service/impl/AuthServiceImpl.java:[106,39] 对findById的引用不明确
+  com.godblessyou.lottery.domain.repository.UserRepository 中的方法 findById(java.lang.Long) 和 org.springframework.data.repository.CrudRepository 中的方法 findById(ID) 都匹配
+[ERROR] /D:/2/backend/src/main/java/com/godblessyou/lottery/application/service/impl/AuthServiceImpl.java:[145,35] 对findById的引用不明确
+  com.godblessyou.lottery.domain.repository.UserRepository 中的方法 findById(java.lang.Long) 和 org.springframework.data.repository.CrudRepository 中的方法 findById(ID) 都匹配
+[ERROR] /D:/2/backend/src/main/java/com/godblessyou/lottery/application/service/impl/AuthServiceImpl.java:[149,23] 对save的引用不明确
+  com.godblessyou.lottery.domain.repository.UserRepository 中的方法 save(com.godblessyou.lottery.domain.entity.User) 和 org.springframework.data.repository.CrudRepository 中的方法 <S>save(S) 都匹配
+[ERROR] /D:/2/backend/src/main/java/com/godblessyou/lottery/application/service/impl/AuthServiceImpl.java:[150,36] 对save的引用不明确
+  com.godblessyou.lottery.domain.repository.EmailVerificationRepository 中的方法 save(com.godblessyou.lottery.domain.entity.EmailVerification) 和 org.springframework.data.repository.CrudRepository 中的方法 <S>save(S) 都匹配
+[ERROR] /D:/2/backend/src/main/java/com/godblessyou/lottery/application/service/impl/AuthServiceImpl.java:[172,36] 对save的引用不明确
+  com.godblessyou.lottery.domain.repository.EmailVerificationRepository 中的方法 save(com.godblessyou.lottery.domain.entity.EmailVerification) 和 org.springframework.data.repository.CrudRepository 中的方法 <S>save(S) 都匹配
+[ERROR] /D:/2/backend/src/main/java/com/godblessyou/lottery/infrastructure/security/JwtAuthenticationFilter.java:[37,31] 对findById的引用不明确
+  com.godblessyou.lottery.domain.repository.UserRepository 中的方法 findById(java.lang.Long) 和 org.springframework.data.repository.CrudRepository 中的方法 findById(ID) 都匹配
+[ERROR] /D:/2/backend/src/main/java/com/godblessyou/lottery/infrastructure/audit/PrizeStockAuditService.java:[31,34] 对save的引用不明确
+  com.godblessyou.lottery.domain.repository.PrizeStockAuditRepository 中的方法 save(com.godblessyou.lottery.domain.entity.PrizeStockAudit) 和 org.springframework.data.repository.CrudRepository 中的方法 <S>save(S) 都匹配
+[ERROR] /D:/2/backend/src/main/java/com/godblessyou/lottery/application/service/impl/AdminServiceImpl.java:[85,32] 对save的引用不明确
+  com.godblessyou.lottery.domain.repository.PrizeRepository 中的方法 save(com.godblessyou.lottery.domain.entity.Prize) 和 org.springframework.data.repository.CrudRepository 中的方法 <S>save(S) 都匹配
+[ERROR] /D:/2/backend/src/main/java/com/godblessyou/lottery/application/service/impl/AdminServiceImpl.java:[111,38] 对findById的引用不明确
+  com.godblessyou.lottery.domain.repository.PrizeRepository 中的方法 findById(java.lang.Long) 和 org.springframework.data.repository.CrudRepository 中的方法 findById(ID) 都匹配
+[ERROR] /D:/2/backend/src/main/java/com/godblessyou/lottery/application/service/impl/AdminServiceImpl.java:[138,32] 对save的引用不明确
+  com.godblessyou.lottery.domain.repository.PrizeRepository 中的方法 save(com.godblessyou.lottery.domain.entity.Prize) 和 org.springframework.data.repository.CrudRepository 中的方法 <S>save(S) 都匹配
+[ERROR] /D:/2/backend/src/main/java/com/godblessyou/lottery/application/service/impl/AdminServiceImpl.java:[155,38] 对findById的引用不明确
+  com.godblessyou.lottery.domain.repository.PrizeRepository 中的方法 findById(java.lang.Long) 和 org.springframework.data.repository.CrudRepository 中的方法 findById(ID) 都匹配
+[ERROR] /D:/2/backend/src/main/java/com/godblessyou/lottery/application/service/impl/AdminServiceImpl.java:[157,32] 对save的引用不明确
+  com.godblessyou.lottery.domain.repository.PrizeRepository 中的方法 save(com.godblessyou.lottery.domain.entity.Prize) 和 org.springframework.data.repository.CrudRepository 中的方法 <S>save(S) 都匹配
+[ERROR] /D:/2/backend/src/main/java/com/godblessyou/lottery/application/service/impl/AdminServiceImpl.java:[164,38] 对findById的引用不明确
+  com.godblessyou.lottery.domain.repository.PrizeRepository 中的方法 findById(java.lang.Long) 和 org.springframework.data.repository.CrudRepository 中的方法 findById(ID) 都匹配
+[ERROR] /D:/2/backend/src/main/java/com/godblessyou/lottery/application/service/impl/AdminServiceImpl.java:[179,24] 对deleteById的引用不明确
+  com.godblessyou.lottery.domain.repository.PrizeRepository 中的方法 deleteById(java.lang.Long) 和 org.springframework.data.repository.CrudRepository 中的方法 deleteById(ID) 都匹配
+[ERROR] /D:/2/backend/src/main/java/com/godblessyou/lottery/application/service/impl/LotteryServiceImpl.java:[60,39] 对findById的引用不明确
+  com.godblessyou.lottery.domain.repository.UserRepository 中的方法 findById(java.lang.Long) 和 org.springframework.data.repository.CrudRepository 中的方法 findById(ID) 都匹配
+[ERROR] /D:/2/backend/src/main/java/com/godblessyou/lottery/application/service/impl/LotteryServiceImpl.java:[85,36] 对save的引用不明确
+  com.godblessyou.lottery.domain.repository.LotteryRecordRepository 中的方法 save(com.godblessyou.lottery.domain.entity.LotteryRecord) 和 org.springframework.data.repository.CrudRepository 中的方法 <S>save(S) 都匹配
+[ERROR] /D:/2/backend/src/main/java/com/godblessyou/lottery/application/service/impl/LotteryServiceImpl.java:[94,27] 对save的引用不明确
+  com.godblessyou.lottery.domain.repository.UserRepository 中的方法 save(com.godblessyou.lottery.domain.entity.User) 和 org.springframework.data.repository.CrudRepository 中的方法 <S>save(S) 都匹配
+[ERROR] /D:/2/backend/src/main/java/com/godblessyou/lottery/application/service/impl/LotteryServiceImpl.java:[96,48] 对findById的引用不明确
+  com.godblessyou.lottery.domain.repository.PrizeRepository 中的方法 findById(java.lang.Long) 和 org.springframework.data.repository.CrudRepository 中的方法 findById(ID) 都匹配
+[ERROR] /D:/2/backend/src/main/java/com/godblessyou/lottery/application/service/impl/LotteryServiceImpl.java:[122,42] 对findById的引用不明确
+  com.godblessyou.lottery.domain.repository.PrizeRepository 中的方法 findById(java.lang.Long) 和 org.springframework.data.repository.CrudRepository 中的方法 findById(ID) 都匹配
+[INFO] 25 errors
+[INFO] -------------------------------------------------------------
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  10.550 s
+[INFO] Finished at: 2026-05-23T16:25:53+08:00
+[INFO] ------------------------------------------------------------------------
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:3.11.0:compile (default-compile) on project backend: Compilation failure: Compilation failure:
+[ERROR] /D:/2/backend/src/main/java/com/godblessyou/lottery/infrastructure/mail/MailService.java:[49,35] 对save的引用不明确
+[ERROR]   com.godblessyou.lottery.domain.repository.EmailSendLogRepository 中的方法 save(com.godblessyou.lottery.domain.entity.EmailSendLog) 和 org.springframework.data.repository.CrudRepository 中的方法 <S>save(S) 都匹配
+[ERROR] /D:/2/backend/src/main/java/com/godblessyou/lottery/infrastructure/mail/MailService.java:[63,39] 对save的引用不明确
+[ERROR]   com.godblessyou.lottery.domain.repository.EmailSendLogRepository 中的方法 save(com.godblessyou.lottery.domain.entity.EmailSendLog) 和 org.springframework.data.repository.CrudRepository 中的方法 <S>save(S) 都匹配
+[ERROR] /D:/2/backend/src/main/java/com/godblessyou/lottery/infrastructure/mail/MailService.java:[75,39] 对save的引用不明确
+[ERROR]   com.godblessyou.lottery.domain.repository.EmailSendLogRepository 中的方法 save(com.godblessyou.lottery.domain.entity.EmailSendLog) 和 org.springframework.data.repository.CrudRepository 中的方法 <S>save(S) 都匹配
+[ERROR] /D:/2/backend/src/main/java/com/godblessyou/lottery/infrastructure/config/AdminBootstrapConfig.java:[50,27] 对save的引用不明确
+[ERROR]   com.godblessyou.lottery.domain.repository.UserRepository 中的方法 save(com.godblessyou.lottery.domain.entity.User) 和 org.springframework.data.repository.CrudRepository 中的方法 <S>save(S) 都匹配
+[ERROR] /D:/2/backend/src/main/java/com/godblessyou/lottery/application/service/impl/AuthServiceImpl.java:[67,30] 对save的引用不明确
+[ERROR]   com.godblessyou.lottery.domain.repository.UserRepository 中的方法 save(com.godblessyou.lottery.domain.entity.User) 和 org.springframework.data.repository.CrudRepository 中的方法 <S>save(S) 都匹配
+[ERROR] /D:/2/backend/src/main/java/com/godblessyou/lottery/application/service/impl/AuthServiceImpl.java:[75,36] 对save的引用不明确
+[ERROR]   com.godblessyou.lottery.domain.repository.EmailVerificationRepository 中的方法 save(com.godblessyou.lottery.domain.entity.EmailVerification) 和 org.springframework.data.repository.CrudRepository 中的方法 <S>save(S) 都匹配
+[ERROR] /D:/2/backend/src/main/java/com/godblessyou/lottery/application/service/impl/AuthServiceImpl.java:[106,39] 对findById的引用不明确
+[ERROR]   com.godblessyou.lottery.domain.repository.UserRepository 中的方法 findById(java.lang.Long) 和 org.springframework.data.repository.CrudRepository 中的方法 findById(ID) 都匹配
+[ERROR] /D:/2/backend/src/main/java/com/godblessyou/lottery/application/service/impl/AuthServiceImpl.java:[145,35] 对findById的引用不明确
+[ERROR]   com.godblessyou.lottery.domain.repository.UserRepository 中的方法 findById(java.lang.Long) 和 org.springframework.data.repository.CrudRepository 中的方法 findById(ID) 都匹配
+[ERROR] /D:/2/backend/src/main/java/com/godblessyou/lottery/application/service/impl/AuthServiceImpl.java:[149,23] 对save的引用不明确
+[ERROR]   com.godblessyou.lottery.domain.repository.UserRepository 中的方法 save(com.godblessyou.lottery.domain.entity.User) 和 org.springframework.data.repository.CrudRepository 中的方法 <S>save(S) 都匹配
+[ERROR] /D:/2/backend/src/main/java/com/godblessyou/lottery/application/service/impl/AuthServiceImpl.java:[150,36] 对save的引用不明确
+[ERROR]   com.godblessyou.lottery.domain.repository.EmailVerificationRepository 中的方法 save(com.godblessyou.lottery.domain.entity.EmailVerification) 和 org.springframework.data.repository.CrudRepository 中的方法 <S>save(S) 都匹配
+[ERROR] /D:/2/backend/src/main/java/com/godblessyou/lottery/application/service/impl/AuthServiceImpl.java:[172,36] 对save的引用不明确
+[ERROR]   com.godblessyou.lottery.domain.repository.EmailVerificationRepository 中的方法 save(com.godblessyou.lottery.domain.entity.EmailVerification) 和 org.springframework.data.repository.CrudRepository 中的方法 <S>save(S) 都匹配
+[ERROR] /D:/2/backend/src/main/java/com/godblessyou/lottery/infrastructure/security/JwtAuthenticationFilter.java:[37,31] 对findById的引用不明确
+[ERROR]   com.godblessyou.lottery.domain.repository.UserRepository 中的方法 findById(java.lang.Long) 和 org.springframework.data.repository.CrudRepository 中的方法 findById(ID) 都匹配
+[ERROR] /D:/2/backend/src/main/java/com/godblessyou/lottery/infrastructure/audit/PrizeStockAuditService.java:[31,34] 对save的引用不明确
+[ERROR]   com.godblessyou.lottery.domain.repository.PrizeStockAuditRepository 中的方法 save(com.godblessyou.lottery.domain.entity.PrizeStockAudit) 和 org.springframework.data.repository.CrudRepository 中的方法 <S>save(S) 都匹配
+[ERROR] /D:/2/backend/src/main/java/com/godblessyou/lottery/application/service/impl/AdminServiceImpl.java:[85,32] 对save的引用不明确
+[ERROR]   com.godblessyou.lottery.domain.repository.PrizeRepository 中的方法 save(com.godblessyou.lottery.domain.entity.Prize) 和 org.springframework.data.repository.CrudRepository 中的方法 <S>save(S) 都匹配
+[ERROR] /D:/2/backend/src/main/java/com/godblessyou/lottery/application/service/impl/AdminServiceImpl.java:[111,38] 对findById的引用不明确
+[ERROR]   com.godblessyou.lottery.domain.repository.PrizeRepository 中的方法 findById(java.lang.Long) 和 org.springframework.data.repository.CrudRepository 中的方法 findById(ID) 都匹配
+[ERROR] /D:/2/backend/src/main/java/com/godblessyou/lottery/application/service/impl/AdminServiceImpl.java:[138,32] 对save的引用不明确
+[ERROR]   com.godblessyou.lottery.domain.repository.PrizeRepository 中的方法 save(com.godblessyou.lottery.domain.entity.Prize) 和 org.springframework.data.repository.CrudRepository 中的方法 <S>save(S) 都匹配
+[ERROR] /D:/2/backend/src/main/java/com/godblessyou/lottery/application/service/impl/AdminServiceImpl.java:[155,38] 对findById的引用不明确
+[ERROR]   com.godblessyou.lottery.domain.repository.PrizeRepository 中的方法 findById(java.lang.Long) 和 org.springframework.data.repository.CrudRepository 中的方法 findById(ID) 都匹配
+[ERROR] /D:/2/backend/src/main/java/com/godblessyou/lottery/application/service/impl/AdminServiceImpl.java:[157,32] 对save的引用不明确
+[ERROR]   com.godblessyou.lottery.domain.repository.PrizeRepository 中的方法 save(com.godblessyou.lottery.domain.entity.Prize) 和 org.springframework.data.repository.CrudRepository 中的方法 <S>save(S) 都匹配
+[ERROR] /D:/2/backend/src/main/java/com/godblessyou/lottery/application/service/impl/AdminServiceImpl.java:[164,38] 对findById的引用不明确
+[ERROR]   com.godblessyou.lottery.domain.repository.PrizeRepository 中的方法 findById(java.lang.Long) 和 org.springframework.data.repository.CrudRepository 中的方法 findById(ID) 都匹配
+[ERROR] /D:/2/backend/src/main/java/com/godblessyou/lottery/application/service/impl/AdminServiceImpl.java:[179,24] 对deleteById的引用不明确
+[ERROR]   com.godblessyou.lottery.domain.repository.PrizeRepository 中的方法 deleteById(java.lang.Long) 和 org.springframework.data.repository.CrudRepository 中的方法 deleteById(ID) 都匹配
+[ERROR] /D:/2/backend/src/main/java/com/godblessyou/lottery/application/service/impl/LotteryServiceImpl.java:[60,39] 对findById的引用不明确
+[ERROR]   com.godblessyou.lottery.domain.repository.UserRepository 中的方法 findById(java.lang.Long) 和 org.springframework.data.repository.CrudRepository 中的方法 findById(ID) 都匹配
+[ERROR] /D:/2/backend/src/main/java/com/godblessyou/lottery/application/service/impl/LotteryServiceImpl.java:[85,36] 对save的引用不明确
+[ERROR]   com.godblessyou.lottery.domain.repository.LotteryRecordRepository 中的方法 save(com.godblessyou.lottery.domain.entity.LotteryRecord) 和 org.springframework.data.repository.CrudRepository 中的方法 <S>save(S) 都匹配
+[ERROR] /D:/2/backend/src/main/java/com/godblessyou/lottery/application/service/impl/LotteryServiceImpl.java:[94,27] 对save的引用不明确
+[ERROR]   com.godblessyou.lottery.domain.repository.UserRepository 中的方法 save(com.godblessyou.lottery.domain.entity.User) 和 org.springframework.data.repository.CrudRepository 中的方法 <S>save(S) 都匹配
+[ERROR] /D:/2/backend/src/main/java/com/godblessyou/lottery/application/service/impl/LotteryServiceImpl.java:[96,48] 对findById的引用不明确
+[ERROR]   com.godblessyou.lottery.domain.repository.PrizeRepository 中的方法 findById(java.lang.Long) 和 org.springframework.data.repository.CrudRepository 中的方法 findById(ID) 都匹配
+[ERROR] /D:/2/backend/src/main/java/com/godblessyou/lottery/application/service/impl/LotteryServiceImpl.java:[122,42] 对findById的引用不明确
+[ERROR]   com.godblessyou.lottery.domain.repository.PrizeRepository 中的方法 findById(java.lang.Long) 和 org.springframework.data.repository.CrudRepository 中的方法 findById(ID) 都匹配
+[ERROR] -> [Help 1]
+[ERROR]
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR]
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException
+PS D:\2\backend>

@@ -1,0 +1,276 @@
+## 一、需求拆解（基于 Vue3 + Spring Boot 架构）
+
+| 需求域 | 子需求 | 技术映射 | 鲁棒性约束 |
+|---|---|---|---|
+| **用户认证** | 注册、登录、登出、JWT 无状态认证 | Spring Security + JWT (Access/Refresh 双 Token) | 密码 bcrypt 加密；登录失败限流；Refresh Token 黑名单 |
+| **邮箱验证** | 注册后发验证码/链接；未验证禁止抽奖 | 本地 Postfix SMTP + Spring Async 异步发送 | 验证码 10 分钟过期；发送频率限流（1 分钟/邮箱）；失败重试 3 次 |
+| **抽奖引擎** | 加权随机；中奖后原子扣减库存；每日限抽 N 次 | Redis 分布式锁 + MySQL 乐观锁 (`stock > 0`) + 事务 | **核心防超卖**：`UPDATE prize SET stock = stock - 1 WHERE id = ? AND stock > 0`；抽奖记录幂等（防网络重试重复发奖） |
+| **奖品管理** | 后台 CRUD；批量导入兑换码/图片 URL；概率权重配置；启用禁用 | JPA + MySQL；后台接口鉴权 `@PreAuthorize("hasRole('ADMIN')")` | 概率权重归一化校验；库存变动日志审计 |
+| **中奖发放** | 兑换码文本直接展示；图片 URL 直接展示；记录到个人中心 | 中奖记录表 + 库存项表 (`prize_item` 行级发放) | 发放与扣减同一事务；已发放奖品标记 `used_by` 用户 ID |
+| **邮件服务** | 自建 SMTP；使用自有域名；Web 可管理 | Docker 内嵌 Postfix；端口 587/465；25 端口废弃 | 邮件队列异步化；发送失败落库重试；SPF/DKIM 配置指引 |
+| **部署运维** | 小白一键部署；前后端分离容器化 | Docker Compose (Web + Postfix + MySQL + Redis + Nginx) | 健康检查；数据卷持久化；日志切割；配置外置 `.env` |
+
+---
+
+## 二、完善后的提示词
+
+
+你是一位资深 Java 架构师与全栈工程师。请基于以下技术栈与详细设计，开发一个完整的抽奖系统。要求代码具备生产级鲁棒性与可维护性，采用 DDD 分层思想。
+
+【一、技术栈】
+前端：Vue 3.4 + Element Plus 2.4 + Vite 5 + Vue Router 4 + Pinia 2 + Axios 1.6
+后端：Spring Boot 3.2 + Java 17 + Spring Security 6 + Spring Data JPA + JWT 0.12 + Hutool 5.8 + Swagger (SpringDoc OpenAPI)
+数据库：MySQL 8.0 + Redis 7
+邮件：本地 Postfix SMTP 服务器（587/465 端口，禁用 25 端口）
+部署：Docker + Docker Compose + Nginx Alpine
+
+【二、数据库设计（严格遵循）】
+
+-- 用户表
+CREATE TABLE `users` (
+  `id` BIGINT PRIMARY KEY AUTO_INCREMENT,
+  `username` VARCHAR(20) NOT NULL COMMENT '用户名',
+  `email` VARCHAR(120) NOT NULL COMMENT '邮箱',
+  `password_hash` VARCHAR(255) NOT NULL COMMENT 'bcrypt 哈希',
+  `is_verified` TINYINT(1) DEFAULT 0 COMMENT '邮箱是否验证',
+  `is_admin` TINYINT(1) DEFAULT 0,
+  `last_lottery_at` DATETIME COMMENT '最后抽奖时间',
+  `daily_lottery_count` INT DEFAULT 0 COMMENT '今日已抽次数',
+  `last_lottery_date` DATE COMMENT '最后抽奖日期',
+  `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE KEY `uk_username` (`username`),
+  UNIQUE KEY `uk_email` (`email`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- 奖品表
+CREATE TABLE `prizes` (
+  `id` BIGINT PRIMARY KEY AUTO_INCREMENT,
+  `name` VARCHAR(100) NOT NULL COMMENT '奖品名称',
+  `description` TEXT COMMENT '描述',
+  `prize_type` ENUM('code','image') NOT NULL COMMENT '类型：兑换码/图片',
+  `stock_total` INT DEFAULT 0 COMMENT '总库存',
+  `stock_left` INT DEFAULT 0 COMMENT '剩余库存',
+  `probability` DECIMAL(10,8) NOT NULL DEFAULT 0.00000000 COMMENT '概率权重',
+  `enabled` TINYINT(1) DEFAULT 1,
+  `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- 奖品明细库存表（一行一个兑换码或图片URL）
+CREATE TABLE `prize_items` (
+  `id` BIGINT PRIMARY KEY AUTO_INCREMENT,
+  `prize_id` BIGINT NOT NULL,
+  `content` TEXT NOT NULL COMMENT '兑换码文本或图片URL',
+  `is_used` TINYINT(1) DEFAULT 0,
+  `used_by` BIGINT DEFAULT NULL,
+  `used_at` DATETIME,
+  `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
+  KEY `idx_prize_id` (`prize_id`),
+  KEY `idx_is_used` (`is_used`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- 抽奖记录表
+CREATE TABLE `lottery_records` (
+  `id` BIGINT PRIMARY KEY AUTO_INCREMENT,
+  `user_id` BIGINT NOT NULL,
+  `prize_id` BIGINT NOT NULL,
+  `prize_item_id` BIGINT COMMENT '具体发放的奖品项ID',
+  `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
+  KEY `idx_user_id` (`user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- 邮箱验证表
+CREATE TABLE `email_verifications` (
+  `id` BIGINT PRIMARY KEY AUTO_INCREMENT,
+  `user_id` BIGINT NOT NULL,
+  `token` VARCHAR(128) NOT NULL,
+  `expires_at` DATETIME NOT NULL,
+  `used` TINYINT(1) DEFAULT 0,
+  `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE KEY `uk_token` (`token`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+【三、核心业务流程（必须严格实现）】
+
+1. 注册与邮箱验证流程：
+   - 用户提交 username/email/password → 校验 username 正则 `^[a-zA-Z0-9_\-\u4e00-\u9fff]{3,20}$`，邮箱正则，密码长度 ≥6
+   - 同一事务内：插入 users 表（is_verified=0）+ 插入 email_verifications 表（token=UUID，expires_at=now+24h）
+   - 调用 Spring Async 异步发送邮件（Postfix SMTP，端口 587 STARTTLS）
+   - 邮件发送失败不得回滚用户注册（用户可点击"重新发送"），但需在日志中告警
+   - 用户点击验证链接 → 校验 token 未过期且未使用 → 更新 users.is_verified=1
+
+2. 抽奖流程（核心，必须防并发超卖）：
+   - 前置校验：用户已登录、已验证邮箱、冷却时间 5 秒、每日上限 10 次（配置化）
+   - 加权随机：仅选取 `enabled=1 AND stock_left>0` 的奖品，按 probability 权重归一化后随机
+   - 原子扣减库存（乐观锁）：`UPDATE prizes SET stock_left = stock_left - 1 WHERE id = ? AND stock_left > 0`
+   - 若扣减成功，在同一事务内：
+     a. 取该奖品下最早一条 `is_used=0` 的 prize_items 记录
+     b. 更新 prize_items：`is_used=1, used_by=当前用户ID, used_at=now()`
+     c. 插入 lottery_records
+     d. 更新 users：`last_lottery_at=now(), daily_lottery_count+=1, last_lottery_date=今天`
+   - 若扣减失败（stock_left=0），返回"手慢了，奖品已抽完"
+   - 接口幂等：前端点击防抖 + 后端 Redis 分布式锁（key: `lottery:lock:user:{userId}`，过期 10 秒）
+
+3. 奖品管理后台（仅 ADMIN）：
+   - 添加奖品：输入名称、类型、概率、批量内容（每行一个，按行数自动计算库存）
+   - 批量插入 prize_items，prizes.stock_total/stock_left 自动计数
+   - 启用/禁用奖品（软开关，不影响库存）
+   - 概率权重无需强制归一化为 1，系统按加权随机算法处理
+
+【四、接口设计（RESTful + 统一返回体）】
+
+统一返回体格式：
+{
+  "code": 200,
+  "message": "success",
+  "data": {},
+  "timestamp": 1716200000000
+}
+
+必须实现的接口：
+- POST /api/auth/register → 注册
+- POST /api/auth/login → 登录（返回 accessToken + refreshToken）
+- POST /api/auth/refresh → 刷新 Token
+- GET /api/auth/verify?token=xxx → 邮箱验证回调
+- POST /api/auth/resend → 重新发送验证邮件（限流 60 秒）
+- GET /api/lottery/prizes → 获取当前奖池列表（无需登录）
+- POST /api/lottery/draw → 抽奖（需登录 + 验证邮箱）
+- GET /api/lottery/history → 我的中奖记录
+- GET /api/admin/dashboard → 仪表盘统计
+- GET /api/admin/prizes → 奖品列表
+- POST /api/admin/prizes → 添加奖品（批量内容）
+- PUT /api/admin/prizes/{id}/toggle → 启用/禁用
+
+【五、鲁棒性要求（必须满足）】
+
+1. 并发安全：抽奖接口必须使用 Redis 分布式锁（Redisson 或 RedisTemplate setIfAbsent）+ MySQL 乐观锁双重防护，绝对禁止超卖。
+2. 事务一致性：抽奖扣减、发放、记录必须在同一个 @Transactional 事务内，异常自动回滚。
+3. 幂等性：抽奖接口通过 Redis 锁天然幂等；邮件重发通过 token 表唯一索引防重复生成。
+4. 限流与防刷：登录接口使用 Bucket4j 或 Guava RateLimiter（5 次/分钟）；邮件发送 1 次/分钟/邮箱；抽奖冷却 5 秒。
+5. 全局异常：@ControllerAdvice 统一捕获，异常时自动回滚事务，返回友好错误信息，禁止堆栈泄露到前端。
+6. 数据校验：所有入参使用 @Valid + 自定义注解，前端传任何非法字符均在后端二次校验。
+7. 密码安全：使用 BCryptPasswordEncoder，强度 10，禁止明文存储。
+8. JWT 安全：Access Token 过期 2 小时，Refresh Token 过期 7 天；Refresh Token 使用 Redis 存储并支持黑名单登出。
+
+【六、易维护性要求（代码结构）】
+
+1. 严格分层：
+   - interfaces（Controller + DTO + 全局异常处理）
+   - application（Service 接口 + 实现，业务编排）
+   - domain（实体/值对象/枚举/仓库接口）
+   - infrastructure（JPA Repository 实现、Redis、Postfix 邮件、Security 配置）
+2. 配置外置：所有可变配置（数据库、Redis、SMTP、抽奖规则）提取到 `application.yml`，敏感信息使用 `${ENV_VAR:默认值}`。
+3. 统一日志：SLF4J + Logback，日志文件按天切割，保留 30 天，路径 `/logs`。
+4. 数据库迁移：使用 Flyway，SQL 脚本放在 `db/migration`，确保环境一致性。
+5. API 文档：SpringDoc OpenAPI (Swagger) 自动生成，所有 Controller 必须写 @Operation 注解。
+6. 前端工程化：Vue 3 组合式 API + Pinia 状态管理，Axios 拦截器统一处理 Token 刷新与 401 跳转。
+
+【七、部署配置要求】
+
+请提供完整的 `docker-compose.yml`，包含 5 个服务：
+1. `mysql`: 8.0，持久化卷，初始化执行上述建表 SQL
+2. `redis`: 7-alpine，持久化 AOF
+3. `postfix`: 本地 SMTP，映射 587/465，环境变量配置域名与账号
+4. `backend`: Spring Boot 服务，依赖 mysql/redis/postfix
+5. `frontend`: Nginx Alpine 托管 Vue 构建产物，反向代理 `/api` 到 backend
+6. `nginx`（可选合并到 frontend）：SSL 终止
+
+提供 `setup.sh` 一键部署脚本：
+- 交互式输入域名、管理员账号、Postfix 域名
+- 自动生成 `.env` 文件
+- 自动执行 `docker-compose up -d --build`
+- 输出访问地址与管理后台地址
+
+【八、前端页面要求】
+
+- 登录/注册页（含邮箱验证提示）
+- 抽奖大厅页（奖品卡片网格展示，大抽奖按钮，中奖弹窗展示兑换码/图片）
+- 个人中心页（中奖历史表格，可复制兑换码）
+- 管理后台页（仪表盘统计、奖品 CRUD、批量文本导入库存）
+
+请按以上要求生成完整可运行的项目代码，包含前后端、Docker 配置、数据库迁移脚本。代码必须可直接 `docker-compose up` 运行，且具备生产级健壮性。
+```
+
+---
+
+## 三、核心架构设计（关键决策点）
+
+### 1. 分层架构（DDD 风格）
+
+```
+┌────────────────────────────────────────┐
+│  interfaces (Controller / DTO / Advice) │
+├────────────────────────────────────────┤
+│  application (Service / 业务编排)        │
+├────────────────────────────────────────┤
+│  domain (Entity / Repository Interface) │
+├────────────────────────────────────────┤
+│  infrastructure (JPA / Redis / Mail)   │
+└────────────────────────────────────────┘
+```
+
+**关键决策**：抽奖核心逻辑放在 `application` 层，库存扣减与记录发放封装为**领域服务**，避免事务脚本模式。
+
+### 2. 抽奖防并发设计（双重锁）
+
+| 层级 | 机制 | 作用 | 代码策略 |
+|---|---|---|---|
+| **接口层** | Redis 分布式锁 | 防止同一用户并发请求 | `SET lottery:lock:user:{id} EX 10 NX` |
+| **数据层** | MySQL 乐观锁 | 防止库存超卖 | `UPDATE prizes SET stock_left = stock_left - 1 WHERE id = ? AND stock_left > 0` |
+| **业务层** | 事务包裹 | 保证发放原子性 | `@Transactional(rollbackFor = Exception.class)` |
+
+**时序逻辑**：
+```
+用户点击抽奖
+  → Redis 加锁（10秒过期，防止死锁）
+    → 校验用户状态（验证、冷却、日限）
+      → BEGIN TRANSACTION
+        → 乐观锁扣减库存（返回影响行数=1则成功）
+          → 查询并锁定具体奖品项（SELECT ... FOR UPDATE）
+            → 标记奖品项已使用
+              → 插入中奖记录
+                → 更新用户抽奖时间/次数
+                  → COMMIT
+      → Redis 释放锁
+```
+
+### 3. 邮件服务架构（Postfix 内嵌）
+
+```
+┌─────────────┐      ┌─────────────┐      ┌─────────────┐
+│   Vue 前端   │ ──►  │ Spring Boot │ ──►  │  Postfix    │
+│             │      │  (Async线程池) │      │  :587/465   │
+└─────────────┘      └─────────────┘      └─────────────┘
+                            │
+                            ▼
+                      ┌─────────────┐
+                      │   MySQL     │
+                      │ 邮件日志重试表 │  ← 发送失败落库，定时任务重试
+                      └─────────────┘
+```
+
+**关键决策**：邮件发送**异步化**（`@Async` + 线程池），与注册事务解耦。发送失败写入 `email_logs` 表，由 `@Scheduled` 每 5 分钟重试，避免 SMTP 瞬时故障导致用户注册体验卡顿。
+
+### 4. 配置外置与易维护性清单
+
+| 配置项 | 外置位置 | 默认值 | 说明 |
+|---|---|---|---|
+| JWT 密钥 | `JWT_SECRET` 环境变量 | 随机生成 | 容器启动时注入 |
+| 数据库连接 | `application.yml` | jdbc:mysql://mysql:3306/... | 容器内网地址 |
+| SMTP 账号 | `SMTP_USER/PASS` | noreply@domain.com | Postfix 内嵌账号 |
+| 抽奖日限/冷却 | `lottery.daily-limit` / `lottery.cooldown` | 10 / 5s | 热配置可扩展为 Nacos |
+
+---
+
+## 四、鲁棒性 & 易维护性速查表
+
+| 风险点 | 防御方案 | 实现位置 |
+|---|---|---|
+| **超卖** | Redis 锁 + 乐观锁 `stock > 0` | `LotteryService.draw()` |
+| **重复发奖** | 用户级 Redis 锁 + 抽奖记录唯一业务索引 | 数据库 `UNIQUE(user_id, created_at)` 近似 |
+| **邮件轰炸** | 邮箱级限流（Redis TTL 60s） | `EmailService.send()` |
+| **暴力登录** | IP + 用户名双维度限流（5次/分） | Spring Security Filter |
+| **Token 泄露** | Access 2h + Refresh 7d + Redis 黑名单 | `JwtAuthenticationFilter` |
+| **数据库不一致** | Flyway 迁移 + 事务严格边界 | `db/migration/V1__init.sql` |
+| **配置泄露** | `.env` 外置 + Spring 属性加密 | `application.yml` `${}` 占位 |
+
+---

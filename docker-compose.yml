@@ -41,6 +41,8 @@ services:
     image: boky/postfix:latest
     container_name: lottery-postfix
     restart: unless-stopped
+    profiles:
+      - mail
     environment:
       ALLOWED_SENDER_DOMAINS: ${POSTFIX_DOMAIN:-example.com}
       HOSTNAME: mail.${POSTFIX_DOMAIN:-example.com}
@@ -67,12 +69,13 @@ services:
       DB_PASSWORD: ${DB_PASSWORD:-lottery123}
       REDIS_HOST: redis
       REDIS_PORT: 6379
-      SMTP_HOST: postfix
-      SMTP_PORT: 587
+      SMTP_HOST: ${SMTP_HOST:-postfix}
+      SMTP_PORT: ${SMTP_PORT:-587}
       SMTP_USER: ${SMTP_USER:-noreply@example.com}
       SMTP_PASS: ${SMTP_PASS:-changeit}
-      SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH: ${SMTP_AUTH:-false}
-      SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE: ${SMTP_STARTTLS:-false}
+      SMTP_AUTH: ${SMTP_AUTH:-false}
+      SMTP_STARTTLS: ${SMTP_STARTTLS:-false}
+      MAIL_DEBUG: ${MAIL_DEBUG:-false}
       FRONTEND_BASE_URL: ${FRONTEND_BASE_URL:-http://localhost}
       ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-http://localhost:5173,http://127.0.0.1:5173,http://localhost:5174,http://127.0.0.1:5174}
       JWT_SECRET: ${JWT_SECRET}

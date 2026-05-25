@@ -47,7 +47,7 @@ logging:
 
 lottery:
   mail:
-    from: ${SMTP_FROM:}
+    from: ${SMTP_FROM:${SMTP_USER:noreply@example.com}}
     retry-delay-ms: ${MAIL_RETRY_DELAY_MS:300000}
     verification-expire-minutes: ${MAIL_VERIFICATION_EXPIRE_MINUTES:10}
   jwt:

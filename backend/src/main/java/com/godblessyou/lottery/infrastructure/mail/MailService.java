@@ -14,7 +14,6 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
 
 @Slf4j
 @Service
@@ -24,21 +23,11 @@ public class MailService {
     private final JavaMailSender mailSender;
     private final JpaEmailSendLogRepository emailSendLogRepository;
 
-    @Value("${spring.mail.username}")
-    private String smtpUsername;
-
-    @Value("${lottery.mail.from:#{null}}")
-    private String mailFrom;
+    @Value("${lottery.mail.from}")
+    private String from;
 
     @Value("${lottery.frontend-base-url}")
     private String frontendBaseUrl;
-
-    private String getFrom() {
-        if (StringUtils.hasText(mailFrom)) {
-            return mailFrom;
-        }
-        return smtpUsername;
-    }
 
     @Async("mailTaskExecutor")
     public void sendVerificationEmail(User user, String token) {
@@ -46,7 +35,7 @@ public class MailService {
         String content = "请点击链接完成邮箱验证：" + frontendBaseUrl + "/verify?token=" + token;
         try {
             sendMail(user.getEmail(), subject, content);
-            log.info("Verification email sent to {} (userId={})", user.getEmail(), user.getId());
+            log.info("Verification email sent to {} (userId={}) from={}", user.getEmail(), user.getId(), from);
         } catch (Exception ex) {
             log.warn("Failed to send verification email to {}: {}", user.getEmail(), ex.getMessage());
             EmailSendLog emailSendLog = new EmailSendLog();
@@ -97,7 +86,7 @@ public class MailService {
 
     private void sendMail(String email, String subject, String content) {
         SimpleMailMessage message = new SimpleMailMessage();
-        message.setFrom(getFrom());
+        message.setFrom(from);
         message.setTo(email);
         message.setSubject(subject);
         message.setText(content);

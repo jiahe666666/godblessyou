@@ -75,6 +75,7 @@ services:
       SMTP_PASS: ${SMTP_PASS:-changeit}
       SMTP_AUTH: ${SMTP_AUTH:-false}
       SMTP_STARTTLS: ${SMTP_STARTTLS:-false}
+      SMTP_FROM: ${SMTP_FROM:-}
       MAIL_DEBUG: ${MAIL_DEBUG:-false}
       FRONTEND_BASE_URL: ${FRONTEND_BASE_URL:-http://localhost}
       ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-http://localhost,http://localhost:5173}

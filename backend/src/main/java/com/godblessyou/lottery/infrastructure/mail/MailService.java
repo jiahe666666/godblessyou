@@ -14,6 +14,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 @Slf4j
 @Service
@@ -24,10 +25,20 @@ public class MailService {
     private final JpaEmailSendLogRepository emailSendLogRepository;
 
     @Value("${spring.mail.username}")
-    private String from;
+    private String smtpUsername;
+
+    @Value("${lottery.mail.from:#{null}}")
+    private String mailFrom;
 
     @Value("${lottery.frontend-base-url}")
     private String frontendBaseUrl;
+
+    private String getFrom() {
+        if (StringUtils.hasText(mailFrom)) {
+            return mailFrom;
+        }
+        return smtpUsername;
+    }
 
     @Async("mailTaskExecutor")
     public void sendVerificationEmail(User user, String token) {
@@ -86,7 +97,7 @@ public class MailService {
 
     private void sendMail(String email, String subject, String content) {
         SimpleMailMessage message = new SimpleMailMessage();
-        message.setFrom(from);
+        message.setFrom(getFrom());
         message.setTo(email);
         message.setSubject(subject);
         message.setText(content);

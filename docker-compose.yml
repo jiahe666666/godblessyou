@@ -37,14 +37,6 @@ services:
       timeout: 5s
       retries: 10
 
-  mailhog:
-    image: mailhog/mailhog:latest
-    container_name: lottery-mailhog
-    restart: unless-stopped
-    ports:
-      - "${MAILHOG_SMTP_PORT:-1025}:1025"
-      - "${MAILHOG_UI_PORT:-8025}:8025"
-
   postfix:
     image: boky/postfix:latest
     container_name: lottery-postfix
@@ -77,18 +69,18 @@ services:
       DB_PASSWORD: ${DB_PASSWORD:-lottery123}
       REDIS_HOST: redis
       REDIS_PORT: 6379
-      SMTP_HOST: ${SMTP_HOST:-mailhog}
-      SMTP_PORT: ${SMTP_PORT:-1025}
-      SMTP_USER: ${SMTP_USER:-noreply@lottery.local}
-      SMTP_PASS: ${SMTP_PASS:-}
+      SMTP_HOST: ${SMTP_HOST:-postfix}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USER: ${SMTP_USER:-noreply@example.com}
+      SMTP_PASS: ${SMTP_PASS:-changeit}
       SMTP_AUTH: ${SMTP_AUTH:-false}
       SMTP_STARTTLS: ${SMTP_STARTTLS:-false}
       MAIL_DEBUG: ${MAIL_DEBUG:-false}
       FRONTEND_BASE_URL: ${FRONTEND_BASE_URL:-http://localhost}
       ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-http://localhost,http://localhost:5173}
-      JWT_SECRET: ${JWT_SECRET:-dev-secret-do-not-use-in-production-change-me}
+      JWT_SECRET: ${JWT_SECRET:-dev-secret-change-me-in-production}
       ADMIN_USERNAME: ${ADMIN_USERNAME:-admin}
-      ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@lottery.local}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@example.com}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD:-Admin@123456}
       LOTTERY_DAILY_LIMIT: ${LOTTERY_DAILY_LIMIT:-10}
       LOTTERY_COOLDOWN_SECONDS: ${LOTTERY_COOLDOWN_SECONDS:-5}

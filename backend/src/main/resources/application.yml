@@ -51,6 +51,7 @@ lottery:
     access-expire-seconds: ${JWT_ACCESS_EXPIRE_SECONDS:7200}
     refresh-expire-seconds: ${JWT_REFRESH_EXPIRE_SECONDS:604800}
   mail:
+    from: ${SMTP_FROM:}
     retry-delay-ms: ${MAIL_RETRY_DELAY_MS:300000}
     verification-expire-minutes: ${MAIL_VERIFICATION_EXPIRE_MINUTES:10}
   security:

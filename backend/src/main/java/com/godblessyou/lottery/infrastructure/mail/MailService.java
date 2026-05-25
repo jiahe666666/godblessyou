@@ -23,7 +23,7 @@ public class MailService {
     private final JavaMailSender mailSender;
     private final JpaEmailSendLogRepository emailSendLogRepository;
 
-    @Value("${spring.mail.username}")
+    @Value("${lottery.mail.from:${spring.mail.username}}")
     private String from;
 
     @Value("${lottery.frontend-base-url}")

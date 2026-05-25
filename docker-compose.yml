@@ -73,6 +73,7 @@ services:
       SMTP_PORT: ${SMTP_PORT:-587}
       SMTP_USER: ${SMTP_USER:-noreply@example.com}
       SMTP_PASS: ${SMTP_PASS:-changeit}
+      SMTP_FROM: ${SMTP_FROM}
       SMTP_AUTH: ${SMTP_AUTH:-false}
       SMTP_STARTTLS: ${SMTP_STARTTLS:-false}
       MAIL_DEBUG: ${MAIL_DEBUG:-false}

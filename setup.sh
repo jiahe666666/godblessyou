@@ -38,29 +38,40 @@ ADMIN_PASSWORD="$(prompt_default "请输入管理员密码" "Admin@123456")"
 
 echo ""
 echo "--- 邮件发送配置 ---"
-echo "1) 外部 SMTP Relay（QQ/163/SendGrid 等，推荐，无需 25 端口）"
-echo "2) 内置 postfix 容器（需要 25 端口，启动加 --profile mail）"
-MAIL_MODE="$(prompt_default "请选择邮件模式 [1/2]" "1")"
+echo "1) MailHog（默认，邮件不真发，在 http://localhost:8025 查看，推荐测试用）"
+echo "2) 外部 SMTP Relay（QQ/163/SendGrid 等，需要真实 SMTP 账号）"
+echo "3) 内置 postfix 容器（需要 25 端口）"
+MAIL_MODE="$(prompt_default "请选择邮件模式 [1/2/3]" "1")"
 
-if [[ "$MAIL_MODE" == "1" ]]; then
-  SMTP_HOST="$(prompt_default "SMTP 服务器地址" "smtp.qq.com")"
-  SMTP_PORT="$(prompt_default "SMTP 端口" "587")"
-  SMTP_USER="$(prompt_default "SMTP 发信账号" "your-email@qq.com")"
-  SMTP_PASS="$(prompt_default "SMTP 密码/授权码" "")"
-  SMTP_AUTH="true"
-  SMTP_STARTTLS="true"
-  POSTFIX_DOMAIN="example.com"
-  SMTP_SSL_PORT="465"
-else
-  SMTP_HOST="postfix"
-  SMTP_PORT="587"
-  SMTP_SSL_PORT="465"
-  SMTP_USER="noreply@example.com"
-  SMTP_PASS="changeit"
-  SMTP_AUTH="false"
-  SMTP_STARTTLS="false"
-  POSTFIX_DOMAIN="$(prompt_default "请输入发信域名" "$DOMAIN")"
-fi
+case "$MAIL_MODE" in
+  1)
+    SMTP_HOST="mailhog"
+    SMTP_PORT="1025"
+    SMTP_USER="noreply@lottery.local"
+    SMTP_PASS=""
+    SMTP_AUTH="false"
+    SMTP_STARTTLS="false"
+    POSTFIX_DOMAIN="example.com"
+    ;;
+  2)
+    SMTP_HOST="$(prompt_default "SMTP 服务器地址" "smtp.qq.com")"
+    SMTP_PORT="$(prompt_default "SMTP 端口" "587")"
+    SMTP_USER="$(prompt_default "SMTP 发信账号" "your-email@qq.com")"
+    SMTP_PASS="$(prompt_default "SMTP 密码/授权码" "")"
+    SMTP_AUTH="true"
+    SMTP_STARTTLS="true"
+    POSTFIX_DOMAIN="example.com"
+    ;;
+  3)
+    SMTP_HOST="postfix"
+    SMTP_PORT="587"
+    SMTP_USER="noreply@example.com"
+    SMTP_PASS="changeit"
+    SMTP_AUTH="false"
+    SMTP_STARTTLS="false"
+    POSTFIX_DOMAIN="$(prompt_default "请输入发信域名" "$DOMAIN")"
+    ;;
+esac
 
 if [[ "$DOMAIN" == "localhost" || "$DOMAIN" == "127.0.0.1" ]]; then
   FRONTEND_BASE_URL="http://$DOMAIN"
@@ -80,17 +91,18 @@ MYSQL_PORT=3306
 REDIS_PORT=6379
 SMTP_HOST=$SMTP_HOST
 SMTP_PORT=$SMTP_PORT
-SMTP_SSL_PORT=$SMTP_SSL_PORT
 SMTP_USER=$SMTP_USER
 SMTP_PASS=$SMTP_PASS
 SMTP_AUTH=$SMTP_AUTH
 SMTP_STARTTLS=$SMTP_STARTTLS
 MAIL_DEBUG=false
+MAILHOG_SMTP_PORT=1025
+MAILHOG_UI_PORT=8025
 POSTFIX_DOMAIN=$POSTFIX_DOMAIN
 BACKEND_PORT=8080
 FRONTEND_PORT=80
 FRONTEND_BASE_URL=$FRONTEND_BASE_URL
-ALLOWED_ORIGINS=$FRONTEND_BASE_URL,http://localhost:5173,http://127.0.0.1:5173,http://localhost:5174,http://127.0.0.1:5174
+ALLOWED_ORIGINS=$FRONTEND_BASE_URL,http://localhost:5173
 JWT_SECRET=$JWT_SECRET
 ADMIN_USERNAME=$ADMIN_USERNAME
 ADMIN_EMAIL=$ADMIN_EMAIL
@@ -101,7 +113,7 @@ EOF
 
 cd "$ROOT_DIR"
 
-if [[ "$MAIL_MODE" == "2" ]]; then
+if [[ "$MAIL_MODE" == "3" ]]; then
   docker compose --profile mail up -d --build
 else
   docker compose up -d --build
@@ -117,6 +129,9 @@ echo "管理员账号:   $ADMIN_USERNAME"
 echo "管理员邮箱:   $ADMIN_EMAIL"
 echo ""
 if [[ "$MAIL_MODE" == "1" ]]; then
+  echo "邮件模式:     MailHog（邮件不真发）"
+  echo "邮件查看:     http://localhost:8025"
+elif [[ "$MAIL_MODE" == "2" ]]; then
   echo "邮件模式:     外部 SMTP Relay ($SMTP_HOST:$SMTP_PORT)"
   echo "SMTP 账号:    $SMTP_USER"
 else
